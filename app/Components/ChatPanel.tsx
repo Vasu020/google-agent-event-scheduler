@@ -24,7 +24,10 @@ const SUGGESTIONS = [
 export function ChatPanel({
   onEventsChange,
 }: {
-  onEventsChange?: (events: any[]) => void;
+  // Called (no payload) after a reply, since /api/chat's own event list is
+  // "upcoming only" and would clobber the calendar's range-correct one —
+  // the parent should re-fetch by its currently visible range instead.
+  onEventsChange?: () => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -39,17 +42,6 @@ export function ChatPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isSendingRef = useRef(false);
-
-  useEffect(() => {
-    fetch("/api/events")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.events) onEventsChange?.(data.events);
-      })
-      .catch((err) =>
-        console.error("[ChatPanel] initial events fetch failed:", err),
-      );
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -91,7 +83,7 @@ export function ChatPanel({
           timestamp: new Date(),
         },
       ]);
-      onEventsChange?.(data.events);
+      onEventsChange?.();
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -134,7 +126,7 @@ export function ChatPanel({
         <div className="chat-header-icon">
           <Sparkles size={14} />
         </div>
-        <div>
+        <div className="chat-header-text">
           <p className="chat-header-title">Scheduling Assistant</p>
           <p className="chat-header-sub">Powered by Google Calendar</p>
         </div>
@@ -262,43 +254,55 @@ export function ChatPanel({
           border-bottom:1px solid #e5e7eb; 
         }
         
-        .chat-header-icon { 
-          width:34px; 
-          height:34px; 
-          border-radius:10px; 
-          background:linear-gradient(135deg,#3b82f6,#6366f1); 
-          display:flex; 
-          align-items:center; 
-          justify-content:center; 
-          color:white; 
-          flex-shrink:0; 
+        .chat-header-icon {
+          width:34px;
+          height:34px;
+          border-radius:10px;
+          background:linear-gradient(135deg,#3b82f6,#6366f1);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:white;
+          flex-shrink:0;
         }
-        
-        .chat-header-title { 
-          font-size:15px; 
-          font-weight:600; 
-          color:#1f2937; 
-          margin:0; 
+
+        .chat-header-text {
+          min-width:0;
+          flex:1 1 auto;
         }
-        
-        .chat-header-sub { 
-          font-size:12.5px; 
-          color:#64748b; 
-          margin:0; 
+
+        .chat-header-title {
+          font-size:15px;
+          font-weight:600;
+          color:#1f2937;
+          margin:0;
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
         }
-        
-        .chat-header-badge { 
-          margin-left:auto; 
-          display:flex; 
-          align-items:center; 
-          gap:6px; 
-          font-size:12px; 
-          font-weight:500; 
-          color:#10b981; 
-          background:#ecfdf5; 
-          border:1px solid #a7f3d0; 
-          border-radius:9999px; 
-          padding:4px 12px; 
+
+        .chat-header-sub {
+          font-size:12.5px;
+          color:#64748b;
+          margin:0;
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+        }
+
+        .chat-header-badge {
+          margin-left:auto;
+          flex-shrink:0;
+          display:flex;
+          align-items:center;
+          gap:6px;
+          font-size:12px;
+          font-weight:500;
+          color:#10b981;
+          background:#ecfdf5;
+          border:1px solid #a7f3d0;
+          border-radius:9999px;
+          padding:4px 12px;
         }
         
         .status-dot { 
@@ -313,7 +317,7 @@ export function ChatPanel({
           0%,100%{opacity:1} 50%{opacity:0.5} 
         }
         
-        .chat-messages { flex:1; background:#fafcff; }
+        .chat-messages { flex:1; min-height:0; overflow:hidden; background:#fafcff; }
         .messages-inner { 
           padding:24px 20px; 
           display:flex; 

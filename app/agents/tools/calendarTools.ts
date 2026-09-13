@@ -11,6 +11,7 @@ import {
 } from "./gcal/client";
 
 export const getEvents = dbGetEvents;
+export type { CalendarEvent };
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 

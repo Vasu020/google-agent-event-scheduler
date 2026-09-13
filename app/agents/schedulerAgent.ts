@@ -15,11 +15,9 @@ import {
 } from "./tools/memory/Redismemory";
 
 // ── Model ─────────────────────────────────────────────────────────────────────
-// Gemini 2.0 Flash — fast, cheap, excellent tool-calling reliability.
-// gemini-2.0-flash-exp is free on Google AI Studio (no billing needed).
-// For production swap to: gemini-1.5-pro  or  gemini-2.0-flash
+// gemini-2.0-flash was retired; Google's API points callers to gemini-3.6-flash.
 const model = new ChatGoogleGenerativeAI({
-  model: "gemini-2.0-flash",
+  model: "gemini-3.6-flash",
   apiKey: process.env.GOOGLE_AI_API_KEY,
   temperature: 0,
   maxRetries: 2,
